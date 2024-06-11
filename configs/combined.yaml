@@ -1,0 +1,248 @@
+# Copyright 2023 - 2024 California Department of Motor Vehicles
+# Copyright 2023 - 2024 Digital Bazaar, Inc.
+#
+# SPDX-License-Identifier: BSD-3-Clause
+
+app:
+  server:
+     baseUri: "https://localhost"
+  mongodb:
+    name: "opencred_localhost"
+    host: "172.17.0.1"
+    port: 27017
+  opencred:
+    caStore:
+      - pem: |
+          -----BEGIN CERTIFICATE-----
+          MIIBnTCCAUMCFD7ks5kuwnTEGkTUCltUNGoQNLn5MAoGCCqGSM49BAMCMFExCzAJ
+          BgNVBAYTAkFUMQ0wCwYDVQQIDARXaWVuMQ0wCwYDVQQHDARXaWVuMRMwEQYDVQQK
+          DApkYW51YmV0ZWNoMQ8wDQYDVQQDDAZkb21haW4wHhcNMjQwNjA1MTAyNzQ0WhcN
+          MjUwNjA1MTAyNzQ0WjBRMQswCQYDVQQGEwJBVDENMAsGA1UECAwEV2llbjENMAsG
+          A1UEBwwEV2llbjETMBEGA1UECgwKZGFudWJldGVjaDEPMA0GA1UEAwwGZG9tYWlu
+          MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAELgpviGCGSplOY9IjPA0/Dari4LBD
+          F1O3gJhKvVRxFGTotLjwclDFClT4vLE7m+CDEfQwf2S29dmuXoNQ/ONIKjAKBggq
+          hkjOPQQDAgNIADBFAiEAgr25nJJlgfrKQilewwFhT64iwPL5CXlUNP4iFvT7XYEC
+          IEIH8MNWpQWG4PF1e4i0cGIty59t8lP9o6IjQsy4MvIa
+          -----END CERTIFICATE-----
+    signingKeys:
+      - type: ES256
+        id: 9c1d5c1823071b27c2ba6a60ac0d2d6805351609b6bd5df6d64a80e378617372
+        privateKeyPem: |
+          -----BEGIN PRIVATE KEY-----
+          MIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQgfy9vgx0wEwPys9S4
+          6kLCTHdTVoilTX08ZV4f/ES82D2hRANCAAQuCm+IYIZKmU5j0iM8DT8NquLgsEMX
+          U7eAmEq9VHEUZOi0uPByUMUKVPi8sTub4IMR9DB/ZLb12a5eg1D840gq
+          -----END PRIVATE KEY-----
+        publicKeyPem: |
+          -----BEGIN PUBLIC KEY-----
+          MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAELgpviGCGSplOY9IjPA0/Dari4LBD
+          F1O3gJhKvVRxFGTotLjwclDFClT4vLE7m+CDEfQwf2S29dmuXoNQ/ONIKg==
+          -----END PUBLIC KEY-----
+        purpose:
+          - id_token
+          - authorization_request
+    relyingParties:
+      - name: "Test Relying Party (Native)"
+        clientId: "rp1"
+        clientSecret: "DeepestAndDarkest"
+        description: "Relying Party Test App"
+        primaryLogo: "https://placekitten.com/200/200"
+        primaryLink: "https://example.com"
+        secondaryLogo: "https://placekitten.com/200/200"
+        secondaryLink: "https://example2.com"
+        homeLink: "https://example.com"
+        explainerVideo:
+          id: "<YOUTUBE ID>"
+          provider: youtube
+        backgroundImage: "https://placekitten.com/800/200"
+        redirectUri: "http://localhost:3000"
+        idTokenExpirySeconds: 3600
+        claims:
+          - name: "dl_number"
+            path: "driversLicense.document_number"
+        brand:
+          cta: "#0B669D"
+          primary: "#045199"
+          header: "#0979c4"
+        scopes:
+          - name: "openid"
+            description: "Open ID Connect"
+        workflow:
+          type: native
+          id: z1A32xJZGqBeAEcMq56avmw2L
+          initialStep: default
+          steps:
+            default:
+              createChallenge: true
+              verifiablePresentationRequest: >
+                {
+                  "query": {
+                    "type": "QueryByExample",
+                    "credentialQuery": {
+                      "reason": "Please present your VC.",
+                      "example": {
+                        "type": [
+                          "Iso18013DriversLicenseCredential"
+                        ]
+                      }
+                    }
+                  }
+                }
+              constraintsOverride: >
+                {
+                  "fields": [
+                    {
+                      "path": [
+                        "$.vc.type"
+                      ],
+                      "filter": {
+                        "type": "string",
+                        "pattern": "Iso18013DriversLicenseCredential"
+                      }
+                    }
+                  ]
+                }
+      - name: "Test App"
+        # An example that uses a remove VC-API exchanger to connect with a wallet
+        # See Verifiable Credentials API Documentation: https://w3c-ccg.github.io/vc-api/
+        clientId: "32bb6cec384b"
+        clientSecret: "DeepestAndDarkest"
+        description: "Relying Party Test App"
+        icon: "https://placekitten.com/200/200"
+        backgroundImage: "https://placekitten.com/800/300"
+        idTokenExpirySeconds: 3600
+        brand:
+          cta: "#0B669D"
+          primary: "#045199"
+          header: "#0979c4"
+        redirectUri: "http://localhost:3000"
+        scopes:
+          - name: "openid"
+            description: "Open ID Connect"
+        claims:
+          - name: "email"
+            path: "email"
+        workflow:
+          type: vc-api
+          baseUrl: https://example.org/exchanges/123
+          capability: "example"
+          clientSecret: "example"
+      - client_id: 4e3a8b7b4b7b4b7b4b7b
+        # Microsoft Entra Verified Id workflow config
+        # Many of these config fields map to request fields in the APIs linked below:
+        #   https://learn.microsoft.com/en-us/entra/verified-id/get-started-request-api
+        #   https://learn.microsoft.com/en-us/entra/verified-id/presentation-request-api
+        configFrom: 32bb6cec384b # client_id of another relying party to serve as default values
+        workflow:
+          type: microsoft-entra-verified-id
+          apiBaseUrl: https://api.entra.microsoft.example.com/v1.0 # required (will generally be https://verifiedid.did.msidentity.com/v1.0)
+          apiLoginBaseUrl: https://login.entra.microsoft.example.com # required (will generally be https://login.microsoftonline.com)
+          apiClientId: "TODO" # required
+          apiClientSecret: "TODO" # required
+          apiTenantId: "TODO" # required
+          verifierDid: "TODO" # required
+          verifierName: "TODO" # required
+          acceptedCredentialType: "TODO" # required
+          credentialVerificationCallbackAuthEnabled: true # optional (default populated in middleware unless overridden here)
+          acceptedCredentialIssuers: [] # optional (default populated in middleware unless overridden here)
+          credentialVerificationPurpose: "So that we can evaluate your permission to access the requested resource" # optional (default populated in middleware unless overridden here)
+          allowRevokedCredentials: false # optional (default populated in middleware unless overridden here)
+          validateLinkedDomain: false # optional (default populated in middleware unless overridden here)
+          includeQrCode: true # optional (default populated in middleware unless overridden here)
+      - name: "load-test"
+        clientId: "load-test"
+        clientSecret: "DeepestAndDarkest"
+        description: "Load Testing Profile"
+        icon: "https://imagedelivery.net/I-hc6FAYxquPgv-npvTcWQ/241cb0c9-d92c-40b7-1745-6d5e68a45d00/public"
+        backgroundImage: "https://imagedelivery.net/I-hc6FAYxquPgv-npvTcWQ/f7516576-f9d3-4a15-1b9e-e95281613700/public"
+        redirectUri: "http://localhost:3000"
+        idTokenExpirySeconds: 3600
+        claims:
+          - name: "dl_number"
+            path: "driversLicense.document_number"
+        brand:
+          cta: "#0B669D"
+          primary: "#045199"
+          header: "#0979c4"
+        scopes:
+          - name: "openid"
+            description: "Open ID Connect"
+        workflow:
+          type: native
+          id: load-test
+          initialStep: default
+          steps:
+            default:
+              createChallenge: true
+              verifiablePresentationRequest: >
+                {
+                  "query": {
+                    "type": "QueryByExample",
+                    "credentialQuery": {
+                      "reason": "Please present your VC.",
+                      "example": {
+                        "type": [
+                          "DomainLinkageCredential"
+                        ]
+                      }
+                    }
+                  }
+                }
+              constraintsOverride: >
+                {
+                  "fields": [
+                    {
+                      "path": [
+                        "$.vc.type"
+                      ],
+                      "filter": {
+                        "type": "string",
+                        "pattern": "DomainLinkageCredential"
+                      }
+                    }
+                  ]
+                }
+    options:
+      exchangeProtocols:
+        - chapi
+        - openid4vp
+    defaultBrand:
+      cta: "#0B669D"
+      primary: "#045199"
+      header: "#0979c4"
+    enableAudit: false
+#    auditFields:
+#      - type: text
+#        id: given_name
+#        name: First Name
+#        path: "$.credentialSubject.given_name"
+#        required: true
+#      - type: text
+#        id: family_name
+#        name: Last Name
+#        path: "$.credentialSubject.family_name"
+#        required: false
+#      - type: date
+#        id: birth_date
+#        name: Date of Birth
+#        path: "$.credentialSubject.birth_date"
+#        required: true
+    defaultLanguage: en
+    translations:
+      en:
+        qrTitle: Login with your Wallet app
+        qrPageExplain: Scan the following QR Code using the Wallet app on your phone.
+        qrPageExplainHelp: (<a href="https://youtube.com">How do I do it?</a>)
+        qrFooter: "Note: Already on your phone with the Wallet app? Open the Wallet app, then come back and tap on the QR code above."
+        qrFooterHelp: Difficulty using the Wallet app to login? revert to using password <a href="#">here</a>
+        qrDisclaimer: If you don't have a Wallet app download it from the app store.
+        qrExplainerText: (How do I do it?)
+        qrPageAnotherWay: Want to try another way?
+        chapiPageAnotherWay: "Looking for a QR Code to scan with you wallet app instead?"
+        loginCta: "Login with your credential wallet"
+        loginExplain: "To login with your credential wallet, you will need to have the credential wallet app <with configurable URL to app stores> installed"
+        appInstallExplain: "If you don't have a credential wallet yet, you can get one by downloading the credential wallet app <with configurable URL to app stores>"
+        appCta: "Open wallet app"
+        copyright: "Powered by OpenCred"
+        pageTitle: "Login"
+        home: "Home"

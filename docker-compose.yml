@@ -1,0 +1,11 @@
+services:
+  opencred:
+    build: .
+    volumes:
+      - ./configs:/etc/bedrock-config
+    ports:
+      - "22443:22443"
+  mongo:
+    image: mongo:5.0.27
+    ports:
+      - "27017:27017"
