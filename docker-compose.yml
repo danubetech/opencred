@@ -5,6 +5,7 @@ services:
       - ./configs:/etc/bedrock-config
     ports:
       - "22443:22443"
+      - "22080:22080"
   mongo:
     image: mongo:5.0.27
     ports:
