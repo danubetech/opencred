@@ -5,7 +5,7 @@
 
 app:
   server:
-     baseUri: "https://localhost"
+    baseUri: "https://localhost"
   mongodb:
     name: "opencred_localhost"
     host: "172.17.0.1"
@@ -14,32 +14,19 @@ app:
     caStore:
       - pem: |
           -----BEGIN CERTIFICATE-----
-          MIIBnTCCAUMCFD7ks5kuwnTEGkTUCltUNGoQNLn5MAoGCCqGSM49BAMCMFExCzAJ
-          BgNVBAYTAkFUMQ0wCwYDVQQIDARXaWVuMQ0wCwYDVQQHDARXaWVuMRMwEQYDVQQK
-          DApkYW51YmV0ZWNoMQ8wDQYDVQQDDAZkb21haW4wHhcNMjQwNjA1MTAyNzQ0WhcN
-          MjUwNjA1MTAyNzQ0WjBRMQswCQYDVQQGEwJBVDENMAsGA1UECAwEV2llbjENMAsG
-          A1UEBwwEV2llbjETMBEGA1UECgwKZGFudWJldGVjaDEPMA0GA1UEAwwGZG9tYWlu
-          MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAELgpviGCGSplOY9IjPA0/Dari4LBD
-          F1O3gJhKvVRxFGTotLjwclDFClT4vLE7m+CDEfQwf2S29dmuXoNQ/ONIKjAKBggq
-          hkjOPQQDAgNIADBFAiEAgr25nJJlgfrKQilewwFhT64iwPL5CXlUNP4iFvT7XYEC
-          IEIH8MNWpQWG4PF1e4i0cGIty59t8lP9o6IjQsy4MvIa
+          <VALID CERTIFICATE>
           -----END CERTIFICATE-----
     signingKeys:
       - type: ES256
-        id: 9c1d5c1823071b27c2ba6a60ac0d2d6805351609b6bd5df6d64a80e378617372
         privateKeyPem: |
           -----BEGIN PRIVATE KEY-----
-          MIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQgfy9vgx0wEwPys9S4
-          6kLCTHdTVoilTX08ZV4f/ES82D2hRANCAAQuCm+IYIZKmU5j0iM8DT8NquLgsEMX
-          U7eAmEq9VHEUZOi0uPByUMUKVPi8sTub4IMR9DB/ZLb12a5eg1D840gq
+          <VALID PRIVATE KEY>
           -----END PRIVATE KEY-----
         publicKeyPem: |
           -----BEGIN PUBLIC KEY-----
-          MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAELgpviGCGSplOY9IjPA0/Dari4LBD
-          F1O3gJhKvVRxFGTotLjwclDFClT4vLE7m+CDEfQwf2S29dmuXoNQ/ONIKg==
+          <VALID PUBLIC KEY>
           -----END PUBLIC KEY-----
         purpose:
-          - id_token
           - authorization_request
     relyingParties:
       - name: "Test Relying Party (Native)"
@@ -70,9 +57,22 @@ app:
         workflow:
           type: native
           id: z1A32xJZGqBeAEcMq56avmw2L
+          untrustedVariableAllowList:
+            - exampleParam
+            - exampleParam2
           initialStep: default
           steps:
             default:
+              callback:
+                url: http://localhost:9000/callback
+                headersVariable: callbackHeaders
+                oauth:
+                  issuer: http://example.com
+                  token_url: http://example.com/token
+                  client_secret: exampleClientSecret
+                  client_id: exampleClientId
+                  scope:
+                    - default
               createChallenge: true
               verifiablePresentationRequest: >
                 {
@@ -127,12 +127,12 @@ app:
           baseUrl: https://example.org/exchanges/123
           capability: "example"
           clientSecret: "example"
-      - client_id: 4e3a8b7b4b7b4b7b4b7b
+      - clientId: 4e3a8b7b4b7b4b7b4b7b
         # Microsoft Entra Verified Id workflow config
         # Many of these config fields map to request fields in the APIs linked below:
         #   https://learn.microsoft.com/en-us/entra/verified-id/get-started-request-api
         #   https://learn.microsoft.com/en-us/entra/verified-id/presentation-request-api
-        configFrom: 32bb6cec384b # client_id of another relying party to serve as default values
+        configFrom: 32bb6cec384b # clientId of another relying party to serve as default values
         workflow:
           type: microsoft-entra-verified-id
           apiBaseUrl: https://api.entra.microsoft.example.com/v1.0 # required (will generally be https://verifiedid.did.msidentity.com/v1.0)
@@ -142,13 +142,15 @@ app:
           apiTenantId: "TODO" # required
           verifierDid: "TODO" # required
           verifierName: "TODO" # required
-          acceptedCredentialType: "TODO" # required
-          credentialVerificationCallbackAuthEnabled: true # optional (default populated in middleware unless overridden here)
           acceptedCredentialIssuers: [] # optional (default populated in middleware unless overridden here)
           credentialVerificationPurpose: "So that we can evaluate your permission to access the requested resource" # optional (default populated in middleware unless overridden here)
           allowRevokedCredentials: false # optional (default populated in middleware unless overridden here)
           validateLinkedDomain: false # optional (default populated in middleware unless overridden here)
           includeQrCode: true # optional (default populated in middleware unless overridden here)
+          initialStep: default
+          steps:
+            default:
+              acceptedCredentialType: "TODO" # required
       - name: "load-test"
         clientId: "load-test"
         clientSecret: "DeepestAndDarkest"
@@ -210,23 +212,53 @@ app:
       cta: "#0B669D"
       primary: "#045199"
       header: "#0979c4"
-    enableAudit: false
-#    auditFields:
-#      - type: text
-#        id: given_name
-#        name: First Name
-#        path: "$.credentialSubject.given_name"
-#        required: true
-#      - type: text
-#        id: family_name
-#        name: Last Name
-#        path: "$.credentialSubject.family_name"
-#        required: false
-#      - type: date
-#        id: birth_date
-#        name: Date of Birth
-#        path: "$.credentialSubject.birth_date"
-#        required: true
+    audit:
+      enable: true
+      fields:
+        - type: text
+          id: given_name
+          name: First Name
+          path: "$.credentialSubject.given_name"
+          required: true
+        - type: text
+          id: family_name
+          name: Last Name
+          path: "$.credentialSubject.family_name"
+          required: false
+        - type: date
+          id: birth_date
+          name: Date of Birth
+          path: "$.credentialSubject.birth_date"
+          required: true
+        - type: number
+          id: height
+          name:	Height (cm)
+          path: "$.credentialSubject.height"
+          required: false
+        - type: dropdown
+          id: sex
+          name:	Sex
+          path: "$.credentialSubject.sex"
+          required: false
+          options:
+            "Male": 1
+            "Female": 2
+        - type: dropdown
+          id: senior_citizen
+          name:	Are you a senior citizen?
+          path: "$.credentialSubject.senior_citizen"
+          required: true
+          options:
+            "Yes": 1
+            "No": null
+          default: "No"
+    reCaptcha:
+      enable: true
+      version: 2
+      siteKey: 6LcNDSjdAAAAAAAAIe2uy0gavf0reiuhfer12345
+      secretKey: 6LcNDSjdAAAAAAAAIe3uy1gavf1reiuhfer67890
+      pages:
+        - audit
     defaultLanguage: en
     translations:
       en:
@@ -237,7 +269,6 @@ app:
         qrFooterHelp: Difficulty using the Wallet app to login? revert to using password <a href="#">here</a>
         qrDisclaimer: If you don't have a Wallet app download it from the app store.
         qrExplainerText: (How do I do it?)
-        qrPageAnotherWay: Want to try another way?
         chapiPageAnotherWay: "Looking for a QR Code to scan with you wallet app instead?"
         loginCta: "Login with your credential wallet"
         loginExplain: "To login with your credential wallet, you will need to have the credential wallet app <with configurable URL to app stores> installed"
@@ -246,3 +277,4 @@ app:
         copyright: "Powered by OpenCred"
         pageTitle: "Login"
         home: "Home"
+        verificationSuccess: "Success! Your credential has been shared."
