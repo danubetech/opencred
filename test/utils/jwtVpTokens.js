@@ -28,7 +28,7 @@ class Signer {
 export const generateValidJwtVpToken = async ({
   alg = 'ES256',
   crv = 'P-256',
-  aud = 'did:web:localhost:22443',
+  aud = 'did:web:localhost:22080',
   x5c = [],
   leafKeyPair = null
 } = {}) => {

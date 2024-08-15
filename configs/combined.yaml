@@ -11,6 +11,40 @@ app:
     host: "172.17.0.1"
     port: 27017
   opencred:
+    didWeb:
+      mainEnabled: true
+      linkageEnabled: false
+      mainDocument: >
+        {
+          "id": "did:web:localhost:22080",
+          "@context": [
+            "https://www.w3.org/ns/did/v1",
+            {
+              "@base": "did:web:localhost:22080"
+            }
+          ],
+          "service": [],
+          "verificationMethod": [
+            {
+              "id": "test-signing-key",
+              "controller": "did:web:localhost:22080",
+              "type": "EcdsaSecp256k1VerificationKey2019",
+              "publicKeyJwk": {
+                "kid": "9c1d5c1823071b27c2ba6a60ac0d2d6805351609b6bd5df6d64a80e378617372",
+                "kty": "EC",
+                "x": "LgpviGCGSplOY9IjPA0_Dari4LBDF1O3gJhKvVRxFGQ",
+                "y": "6LS48HJQxQpU-LyxO5vggxH0MH9ktvXZrl6DUPzjSCo",
+                "crv": "P-256"
+              }
+            }
+          ],
+          "authentication": [
+            "test-signing-key"
+          ],
+          "assertionMethod": [
+            "test-signing-key"
+          ]
+        }
     caStore:
       - pem: |
           -----BEGIN CERTIFICATE-----
@@ -41,6 +75,7 @@ app:
         purpose:
           - id_token
           - authorization_request
+
     relyingParties:
       - name: "Test Relying Party (Native)"
         clientId: "rp1"
@@ -60,6 +95,8 @@ app:
         claims:
           - name: "dl_number"
             path: "driversLicense.document_number"
+          - name: 'new driving privileges'
+            path: 'driversLicense.driving_privileges'
         brand:
           cta: "#0B669D"
           primary: "#045199"
@@ -102,106 +139,106 @@ app:
                     }
                   ]
                 }
-      - name: "Test App"
-        # An example that uses a remove VC-API exchanger to connect with a wallet
-        # See Verifiable Credentials API Documentation: https://w3c-ccg.github.io/vc-api/
-        clientId: "32bb6cec384b"
-        clientSecret: "DeepestAndDarkest"
-        description: "Relying Party Test App"
-        icon: "https://placekitten.com/200/200"
-        backgroundImage: "https://placekitten.com/800/300"
-        idTokenExpirySeconds: 3600
-        brand:
-          cta: "#0B669D"
-          primary: "#045199"
-          header: "#0979c4"
-        redirectUri: "http://localhost:3000"
-        scopes:
-          - name: "openid"
-            description: "Open ID Connect"
-        claims:
-          - name: "email"
-            path: "email"
-        workflow:
-          type: vc-api
-          baseUrl: https://example.org/exchanges/123
-          capability: "example"
-          clientSecret: "example"
-      - client_id: 4e3a8b7b4b7b4b7b4b7b
-        # Microsoft Entra Verified Id workflow config
-        # Many of these config fields map to request fields in the APIs linked below:
-        #   https://learn.microsoft.com/en-us/entra/verified-id/get-started-request-api
-        #   https://learn.microsoft.com/en-us/entra/verified-id/presentation-request-api
-        configFrom: 32bb6cec384b # client_id of another relying party to serve as default values
-        workflow:
-          type: microsoft-entra-verified-id
-          apiBaseUrl: https://api.entra.microsoft.example.com/v1.0 # required (will generally be https://verifiedid.did.msidentity.com/v1.0)
-          apiLoginBaseUrl: https://login.entra.microsoft.example.com # required (will generally be https://login.microsoftonline.com)
-          apiClientId: "TODO" # required
-          apiClientSecret: "TODO" # required
-          apiTenantId: "TODO" # required
-          verifierDid: "TODO" # required
-          verifierName: "TODO" # required
-          acceptedCredentialType: "TODO" # required
-          credentialVerificationCallbackAuthEnabled: true # optional (default populated in middleware unless overridden here)
-          acceptedCredentialIssuers: [] # optional (default populated in middleware unless overridden here)
-          credentialVerificationPurpose: "So that we can evaluate your permission to access the requested resource" # optional (default populated in middleware unless overridden here)
-          allowRevokedCredentials: false # optional (default populated in middleware unless overridden here)
-          validateLinkedDomain: false # optional (default populated in middleware unless overridden here)
-          includeQrCode: true # optional (default populated in middleware unless overridden here)
-      - name: "load-test"
-        clientId: "load-test"
-        clientSecret: "DeepestAndDarkest"
-        description: "Load Testing Profile"
-        icon: "https://imagedelivery.net/I-hc6FAYxquPgv-npvTcWQ/241cb0c9-d92c-40b7-1745-6d5e68a45d00/public"
-        backgroundImage: "https://imagedelivery.net/I-hc6FAYxquPgv-npvTcWQ/f7516576-f9d3-4a15-1b9e-e95281613700/public"
-        redirectUri: "http://localhost:3000"
-        idTokenExpirySeconds: 3600
-        claims:
-          - name: "dl_number"
-            path: "driversLicense.document_number"
-        brand:
-          cta: "#0B669D"
-          primary: "#045199"
-          header: "#0979c4"
-        scopes:
-          - name: "openid"
-            description: "Open ID Connect"
-        workflow:
-          type: native
-          id: load-test
-          initialStep: default
-          steps:
-            default:
-              createChallenge: true
-              verifiablePresentationRequest: >
-                {
-                  "query": {
-                    "type": "QueryByExample",
-                    "credentialQuery": {
-                      "reason": "Please present your VC.",
-                      "example": {
-                        "type": [
-                          "DomainLinkageCredential"
-                        ]
-                      }
-                    }
-                  }
-                }
-              constraintsOverride: >
-                {
-                  "fields": [
-                    {
-                      "path": [
-                        "$.vc.type"
-                      ],
-                      "filter": {
-                        "type": "string",
-                        "pattern": "DomainLinkageCredential"
-                      }
-                    }
-                  ]
-                }
+#      - name: "Test App"
+#        # An example that uses a remove VC-API exchanger to connect with a wallet
+#        # See Verifiable Credentials API Documentation: https://w3c-ccg.github.io/vc-api/
+#        clientId: "32bb6cec384b"
+#        clientSecret: "DeepestAndDarkest"
+#        description: "Relying Party Test App"
+#        icon: "https://placekitten.com/200/200"
+#        backgroundImage: "https://placekitten.com/800/300"
+#        idTokenExpirySeconds: 3600
+#        brand:
+#          cta: "#0B669D"
+#          primary: "#045199"
+#          header: "#0979c4"
+#        redirectUri: "http://localhost:3000"
+#        scopes:
+#          - name: "openid"
+#            description: "Open ID Connect"
+#        claims:
+#          - name: "email"
+#            path: "email"
+#        workflow:
+#          type: vc-api
+#          baseUrl: https://example.org/exchanges/123
+#          capability: "example"
+#          clientSecret: "example"
+#      - client_id: 4e3a8b7b4b7b4b7b4b7b
+#        # Microsoft Entra Verified Id workflow config
+#        # Many of these config fields map to request fields in the APIs linked below:
+#        #   https://learn.microsoft.com/en-us/entra/verified-id/get-started-request-api
+#        #   https://learn.microsoft.com/en-us/entra/verified-id/presentation-request-api
+#        configFrom: 32bb6cec384b # client_id of another relying party to serve as default values
+#        workflow:
+#          type: microsoft-entra-verified-id
+#          apiBaseUrl: https://api.entra.microsoft.example.com/v1.0 # required (will generally be https://verifiedid.did.msidentity.com/v1.0)
+#          apiLoginBaseUrl: https://login.entra.microsoft.example.com # required (will generally be https://login.microsoftonline.com)
+#          apiClientId: "TODO" # required
+#          apiClientSecret: "TODO" # required
+#          apiTenantId: "TODO" # required
+#          verifierDid: "TODO" # required
+#          verifierName: "TODO" # required
+#          acceptedCredentialType: "TODO" # required
+#          credentialVerificationCallbackAuthEnabled: true # optional (default populated in middleware unless overridden here)
+#          acceptedCredentialIssuers: [] # optional (default populated in middleware unless overridden here)
+#          credentialVerificationPurpose: "So that we can evaluate your permission to access the requested resource" # optional (default populated in middleware unless overridden here)
+#          allowRevokedCredentials: false # optional (default populated in middleware unless overridden here)
+#          validateLinkedDomain: false # optional (default populated in middleware unless overridden here)
+#          includeQrCode: true # optional (default populated in middleware unless overridden here)
+#      - name: "load-test"
+#        clientId: "load-test"
+#        clientSecret: "DeepestAndDarkest"
+#        description: "Load Testing Profile"
+#        icon: "https://imagedelivery.net/I-hc6FAYxquPgv-npvTcWQ/241cb0c9-d92c-40b7-1745-6d5e68a45d00/public"
+#        backgroundImage: "https://imagedelivery.net/I-hc6FAYxquPgv-npvTcWQ/f7516576-f9d3-4a15-1b9e-e95281613700/public"
+#        redirectUri: "http://localhost:3000"
+#        idTokenExpirySeconds: 3600
+#        claims:
+#          - name: "dl_number"
+#            path: "driversLicense.document_number"
+#        brand:
+#          cta: "#0B669D"
+#          primary: "#045199"
+#          header: "#0979c4"
+#        scopes:
+#          - name: "openid"
+#            description: "Open ID Connect"
+#        workflow:
+#          type: native
+#          id: load-test
+#          initialStep: default
+#          steps:
+#            default:
+#              createChallenge: true
+#              verifiablePresentationRequest: >
+#                {
+#                  "query": {
+#                    "type": "QueryByExample",
+#                    "credentialQuery": {
+#                      "reason": "Please present your VC.",
+#                      "example": {
+#                        "type": [
+#                          "DomainLinkageCredential"
+#                        ]
+#                      }
+#                    }
+#                  }
+#                }
+#              constraintsOverride: >
+#                {
+#                  "fields": [
+#                    {
+#                      "path": [
+#                        "$.vc.type"
+#                      ],
+#                      "filter": {
+#                        "type": "string",
+#                        "pattern": "DomainLinkageCredential"
+#                      }
+#                    }
+#                  ]
+#                }
     options:
       exchangeProtocols:
         - chapi
